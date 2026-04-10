@@ -16,6 +16,8 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default function AdminCasesDirectory() {
   const [loading, setLoading] = useState(true);
   const [cases, setCases] = useState<any[]>([]);

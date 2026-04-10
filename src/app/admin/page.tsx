@@ -15,6 +15,8 @@ import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
+export const dynamic = "force-dynamic";
+
 export default function AdminDashboardOverview() {
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState({ totalCases: 0, casesThisWeek: 0, revenueMonth: 0, resolvedCases: 0 });
