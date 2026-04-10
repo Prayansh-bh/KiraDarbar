@@ -31,8 +31,12 @@ function LoginForm() {
     }
 
     setLoading(true);
-
-    setLoading(true);
+    
+    if (!supabase) {
+      setLoading(false);
+      setError("System Configuration Error: Supabase keys are missing. Please add them to your Vercel project settings.");
+      return;
+    }
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,

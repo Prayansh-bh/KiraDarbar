@@ -67,7 +67,11 @@ function SignupForm() {
 
     setLoading(true);
 
-    setLoading(true);
+    if (!supabase) {
+      setLoading(false);
+      setError("System Configuration Error: Supabase keys are missing. Please add them to your Vercel project settings.");
+      return;
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -101,6 +105,12 @@ function SignupForm() {
     }
 
     setLoading(true);
+    
+    if (!supabase) {
+      setLoading(false);
+      setError("System Configuration Error: Supabase keys are missing. Please add them to your Vercel project settings.");
+      return;
+    }
     
     // Auth session should exist here because they verified OTP
     const { data: sessionData } = await supabase.auth.getSession();
