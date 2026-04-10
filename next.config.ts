@@ -14,6 +14,7 @@ const cspHeader = `
     upgrade-insecure-requests;
 `.replace(/\n/g, '').replace(/[ ]+/g, ' ').trim();
 
+/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
