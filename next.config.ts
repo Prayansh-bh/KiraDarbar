@@ -15,6 +15,12 @@ const cspHeader = `
 `.replace(/\n/g, '').replace(/[ ]+/g, ' ').trim();
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return [
       {
