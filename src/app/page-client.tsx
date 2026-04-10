@@ -772,7 +772,6 @@ export default function HomeClient() {
                     Get Started Free <ArrowRight className="ml-2 w-6 h-6 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                <div className="text-sm font-medium text-white/70">No credit card required for the free rights check.</div>
               </div>
             </div>
           </div>
