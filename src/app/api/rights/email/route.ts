@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { RightsReportEmail } from "@/lib/email/templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: Request) {
   try {

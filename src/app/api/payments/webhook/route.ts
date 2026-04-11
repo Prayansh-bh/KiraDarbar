@@ -12,13 +12,13 @@ const CallbackSchema = z.object({
   razorpay_signature: z.string(),
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_BWnVJfdf_PwHymSyvPz37BcmqjFG6VNqx");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jabdlrcvcuopdwlagusr.supabase.co";
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphYmRscmN2Y3VvcGR3bGFndXNyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMzE2MCwiZXhwIjoyMDkxMDc5MTYwfQ.2-fPBy99s1Hms1FjRkCofzus-l-x7GFihUVRXVO0v7c";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
   try {

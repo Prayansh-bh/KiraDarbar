@@ -37,8 +37,8 @@ export async function POST(request: Request) {
     const { product, case_id } = validation.data;
     const amount = productPrices[product];
 
-    const key_id = process.env.RAZORPAY_KEY_ID || 'rzp_test_SagLmXuPg4OLJz';
-    const key_secret = process.env.RAZORPAY_KEY_SECRET || 'Z4sxemmncrzwtDiZ1wwF83g5';
+    const key_id = process.env.RAZORPAY_KEY_ID;
+    const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
     if (!key_id || !key_secret) {
       return NextResponse.json({ error: "Razorpay credentials are not configured in environment variables." }, { status: 500 });
@@ -63,8 +63,8 @@ export async function POST(request: Request) {
     const order = await razorpay.orders.create(options);
 
     // Insert pending row into Supabase using admin client to bypass RLS for internal tracking
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://jabdlrcvcuopdwlagusr.supabase.co';
-    const supabaseAdminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphYmRscmN2Y3VvcGR3bGFndXNyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMzE2MCwiZXhwIjoyMDkxMDc5MTYwfQ.2-fPBy99s1Hms1FjRkCofzus-l-x7GFihUVRXVO0v7c';
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseAdminKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const supabaseAdmin = createAdminClient(supabaseUrl, supabaseAdminKey);
 
     const { error: dbError } = await supabaseAdmin.from("payments").insert({

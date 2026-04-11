@@ -485,13 +485,9 @@ export default function RightsCheckerPage() {
                               });
                               if (res.ok) {
                                 setEmailSent(true);
-                                alert(JSON.stringify(await res.json()));
-                              } else {
-                                alert("Failed to send email. Please try again.");
                               }
                             } catch (err) {
                               console.error(err);
-                              alert("An error occurred. Please check your connection.");
                             }
                           }} 
                           className="bg-[#D4A017] hover:bg-[#B8860B] text-black font-bold"

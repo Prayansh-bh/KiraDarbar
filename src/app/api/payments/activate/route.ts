@@ -23,12 +23,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing payment fields" }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://jabdlrcvcuopdwlagusr.supabase.co";
-    const supabaseAdminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphYmRscmN2Y3VvcGR3bGFndXNyIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTUwMzE2MCwiZXhwIjoyMDkxMDc5MTYwfQ.2-fPBy99s1Hms1FjRkCofzus-l-x7GFihUVRXVO0v7c";
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseAdminKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const supabaseAdmin = createAdminClient(supabaseUrl, supabaseAdminKey);
 
     // 2. Verify signature if secret is available
-    const secret = process.env.RAZORPAY_KEY_SECRET || "Z4sxemmncrzwtDiZ1wwF83g5";
+    const secret = process.env.RAZORPAY_KEY_SECRET;
     if (secret) {
       const generated_signature = crypto
         .createHmac("sha256", secret)

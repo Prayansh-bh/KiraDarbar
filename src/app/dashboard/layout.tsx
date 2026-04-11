@@ -63,13 +63,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-[#0F0F0F] flex font-dm-sans">
 
       {/* Sidebar - Desktop Only */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-72 bg-black text-surface flex-col transition-transform duration-300 ease-in-out relative">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-40 w-80 bg-black text-surface flex-col transition-transform duration-300 ease-in-out relative">
         <div className="flex flex-col h-full p-8 border-r border-white/5">
-          <div className="flex items-center gap-3 mb-12 select-none">
+          <div className="flex items-center gap-3 mb-12 select-none whitespace-nowrap">
             <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 shadow-lg shadow-[#E8602A]/20 border border-white/10">
               <Image src="/logo.png" alt="KiraDarbar Logo" width={40} height={40} className="w-full h-full object-cover" />
             </div>
-            <span className="text-xl lg:text-2xl font-black font-syne italic tracking-tighter text-white">
+            <span className="text-xl lg:text-2xl font-black font-syne italic tracking-tighter text-white shrink-0">
               <span className="text-white">Kira</span>
               <span className="text-[#E8602A] ml-1">Darbar</span>
             </span>

@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 import { CITY_STATE_MAP, CITIES } from "@/utils/locations";
+import { completeUserProfile } from "@/app/actions/user";
 
 
 function SignupForm() {
@@ -25,6 +26,8 @@ function SignupForm() {
   const [fullName, setFullName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [signupUserId, setSignupUserId] = useState<string | null>(null);
+  const [needsConfirmation, setNeedsConfirmation] = useState(false);
 
   const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedCity = e.target.value;
@@ -40,8 +43,19 @@ function SignupForm() {
   const supabase = createClient();
 
   useEffect(() => {
-    // resendTimer logic removed as OTP is no longer used
-  }, []);
+    // Check if user is already logged in (e.g. redirected from login)
+    const checkSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setSignupUserId(data.session.user.id);
+        // If we are on the credentials step but have a session, move to profile
+        if (step === "credentials") {
+          setStep("profile");
+        }
+      }
+    };
+    checkSession();
+  }, [supabase, step]);
 
   const validateProfile = () => {
     if (fullName.length < 2 || fullName.length > 60) return "Name must be between 2 and 60 characters.";
@@ -87,7 +101,11 @@ function SignupForm() {
     if (error) {
       setError(error.message);
     } else if (data.user) {
-      // If user is returned, even if email is unconfirmed, we proceed to profile step
+      setSignupUserId(data.user.id);
+      // If no session is returned, it likely means email confirmation is required
+      if (!data.session) {
+        setNeedsConfirmation(true);
+      }
       setStep("profile");
     }
   };
@@ -106,15 +124,9 @@ function SignupForm() {
 
     setLoading(true);
     
-    if (!supabase) {
-      setLoading(false);
-      setError("System Configuration Error: Supabase keys are missing. Please add them to your Vercel project settings.");
-      return;
-    }
-    
-    // Auth session should exist here because they verified OTP
+    // Try to get userId from session first, then from state
     const { data: sessionData } = await supabase.auth.getSession();
-    const userId = sessionData.session?.user?.id;
+    const userId = sessionData.session?.user?.id || signupUserId;
     
     if (!userId) {
       setError("Authentication lost. Please try logging in again.");
@@ -122,18 +134,22 @@ function SignupForm() {
       return;
     }
 
-    const { error: updateError } = await supabase.from('users').upsert({
-      id: userId,
-      full_name: fullName,
+    const result = await completeUserProfile({
+      userId,
+      fullName,
       city,
       state,
     });
 
     setLoading(false);
-    if (updateError) {
-      setError(updateError.message);
+    if (result.error) {
+      setError(result.error);
     } else {
-      router.push(redirectUrl);
+      if (needsConfirmation) {
+        setError("Profile saved! Please check your email to verify your account before logging in.");
+      } else {
+        router.push(redirectUrl);
+      }
     }
   };
 
@@ -148,7 +164,11 @@ function SignupForm() {
           {step === "profile" ? "Almost there." : "Claim your shield."}
         </div>
         <p className="text-sm text-gray-500 font-medium">
-          {step === "profile" ? "We need a few details to personalize your legal notices." : "Join thousands of protected tenants across India."}
+          {needsConfirmation 
+            ? "Your account is almost ready. Please complete your profile and verify your email."
+            : step === "profile" 
+              ? "We need a few details to personalize your legal notices." 
+              : "Join thousands of protected tenants across India."}
         </p>
       </div>
 
