@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Map, ArrowRight, Share2, Mail, Home, BadgeIndianRupee, TrendingUp, Lock, FileText, Settings, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Map, ArrowRight, Share2, Download, Home, BadgeIndianRupee, TrendingUp, Lock, FileText, Settings, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -261,10 +261,6 @@ function getRightsForStateAndIssue(state: string, issue: string) {
 export default function RightsCheckerPage() {
   const [selectedState, setSelectedState] = useState("");
   const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
-  const [email, setEmail] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailError, setEmailError] = useState<string | null>(null);
 
   const toggleIssue = (id: string) => {
     setSelectedIssues(prev =>
@@ -458,63 +454,16 @@ export default function RightsCheckerPage() {
 
                   <div className="bg-gradient-to-br from-[#1A1A1A] to-[#111] border border-[#D4A017]/30 rounded-2xl p-8 space-y-4">
                     <div className="flex items-center gap-3 mb-2">
-                      <Mail className="w-5 h-5 text-[#D4A017]" />
+                      <Download className="w-5 h-5 text-[#D4A017]" />
                       <h4 className="text-lg font-bold font-syne">Save as PDF</h4>
                     </div>
-                    <p className="text-sm text-gray-400">Get a beautifully formatted PDF of your rights emailed to you for your records.</p>
-                    {!emailSent ? (
-                      <div className="flex gap-2">
-                        <Input
-                          type="email"
-                          placeholder="Email address"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="bg-[#0F0F0F] border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-[#D4A017]"
-                        />
-                        <Button 
-                          onClick={async () => {
-                            setEmailSending(true);
-                            setEmailError(null);
-                            try {
-                              const res = await fetch("/api/rights/email", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({
-                                  email,
-                                  state: selectedState,
-                                  issues: selectedIssues
-                                })
-                              });
-                              if (res.ok) {
-                                setEmailSent(true);
-                              } else {
-                                const errData = await res.json();
-                                setEmailError(errData.error || "Failed to send email. Please try again.");
-                              }
-                            } catch (err) {
-                              console.error(err);
-                              setEmailError("Network error. Please try again.");
-                            } finally {
-                              setEmailSending(false);
-                            }
-                          }} 
-                          disabled={emailSending}
-                          className="bg-[#D4A017] hover:bg-[#B8860B] text-black font-bold disabled:opacity-50"
-                        >
-                          {emailSending ? "Sending..." : "Send"}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="p-3 bg-green-500/10 border border-green-500/20 rounded text-green-400 text-sm font-bold flex items-center gap-2 font-dm-sans">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Report sent! Check your inbox shortly.
-                      </div>
-                    )}
-                    {emailError && (
-                      <div className="text-red-400 text-xs font-bold mt-2">
-                        {emailError}
-                      </div>
-                    )}
+                    <p className="text-sm text-gray-400">Download a beautifully formatted PDF of your rights directly for your records.</p>
+                    <Button 
+                      onClick={() => window.print()}
+                      className="bg-[#D4A017] hover:bg-[#B8860B] text-black font-bold w-full"
+                    >
+                      Download PDF
+                    </Button>
                   </div>
                 </div>
               </div>
