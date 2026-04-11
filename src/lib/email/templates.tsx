@@ -115,8 +115,8 @@ export const RightsReportEmail = ({ state, issues }: { state: string, issues: st
     </Text>
 
     <div className="text-center">
-      <Button href={`https://kiradarbar.in/rights?state=${encodeURIComponent(state)}`} className="bg-[#E8602A] text-white font-bold py-[12px] px-[24px] rounded-md text-[14px]">
-        Full View on KiraDarbar
+      <Button href={`https://kiradarbar.in/api/rights/pdf?state=${encodeURIComponent(state)}&issues=${issues.join(',')}`} className="bg-[#E8602A] text-white font-bold py-[12px] px-[24px] rounded-md text-[14px]">
+        Download Full Report PDF
       </Button>
     </div>
   </GlobalWrapper>
