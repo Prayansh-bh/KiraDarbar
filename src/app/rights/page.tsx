@@ -263,6 +263,8 @@ export default function RightsCheckerPage() {
   const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   const toggleIssue = (id: string) => {
     setSelectedIssues(prev =>
@@ -471,7 +473,8 @@ export default function RightsCheckerPage() {
                         />
                         <Button 
                           onClick={async () => {
-                            if (!email) return;
+                            setEmailSending(true);
+                            setEmailError(null);
                             try {
                               const res = await fetch("/api/rights/email", {
                                 method: "POST",
@@ -484,20 +487,32 @@ export default function RightsCheckerPage() {
                               });
                               if (res.ok) {
                                 setEmailSent(true);
+                              } else {
+                                const errData = await res.json();
+                                setEmailError(errData.error || "Failed to send email. Please try again.");
                               }
                             } catch (err) {
                               console.error(err);
+                              setEmailError("Network error. Please try again.");
+                            } finally {
+                              setEmailSending(false);
                             }
                           }} 
-                          className="bg-[#D4A017] hover:bg-[#B8860B] text-black font-bold"
+                          disabled={emailSending}
+                          className="bg-[#D4A017] hover:bg-[#B8860B] text-black font-bold disabled:opacity-50"
                         >
-                          Send
+                          {emailSending ? "Sending..." : "Send"}
                         </Button>
                       </div>
                     ) : (
                       <div className="p-3 bg-green-500/10 border border-green-500/20 rounded text-green-400 text-sm font-bold flex items-center gap-2 font-dm-sans">
                         <CheckCircle2 className="w-4 h-4" />
                         Report sent! Check your inbox shortly.
+                      </div>
+                    )}
+                    {emailError && (
+                      <div className="text-red-400 text-xs font-bold mt-2">
+                        {emailError}
                       </div>
                     )}
                   </div>

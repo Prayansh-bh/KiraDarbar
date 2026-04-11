@@ -22,14 +22,12 @@ export async function POST(request: Request) {
 
       if (error) {
         console.error("Resend Error:", error);
-        if (process.env.NEXT_PUBLIC_DEVELOPMENT_BYPASS_AUTH === "true") return NextResponse.json({ success: true, bypass: true });
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
       return NextResponse.json({ success: true, id: data?.id });
     } catch (resendError: any) {
       console.error("Resend Send Exception:", resendError);
-      if (process.env.NEXT_PUBLIC_DEVELOPMENT_BYPASS_AUTH === "true") return NextResponse.json({ success: true, bypass: true });
       throw resendError;
     }
   } catch (err: any) {
