@@ -38,6 +38,7 @@ export default function FileNoticePage() {
   const [step, setStep] = useState(1);
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -131,7 +132,7 @@ export default function FileNoticePage() {
       router.push(`/dashboard/cases/${caseData.id}?status=submitted`);
     } catch (error) {
       console.error("Submission error:", error);
-      alert("Something went wrong. Please try again.");
+      setErrorMsg("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -155,6 +156,14 @@ export default function FileNoticePage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-12 pb-32">
+        {/* Inline Error Banner */}
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 mb-6">
+            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-sm font-bold text-red-700 flex-1">{errorMsg}</p>
+            <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-red-600 text-xs font-bold">✕</button>
+          </div>
+        )}
         {/* Progress Bar */}
         <div className="flex gap-2 mb-12">
           {STEPS.map((s) => (

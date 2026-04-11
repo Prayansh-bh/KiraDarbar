@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CreditCard, Search, Filter, RefreshCcw } from "lucide-react";
+import { CreditCard, Search, Filter, RefreshCcw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ export default function AdminPaymentsDirectory() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProduct, setFilterProduct] = useState("all");
   const [isProcessingRefund, setIsProcessingRefund] = useState<string | null>(null);
+  const [refundConfirmId, setRefundConfirmId] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   const supabase = createClient();
 
@@ -34,8 +36,7 @@ export default function AdminPaymentsDirectory() {
   }, [supabase]);
 
   const processRefund = async (paymentId: string) => {
-    if (!confirm("Are you sure you want to initiate a full refund for this transaction? This calls the Razorpay Refund API and reverses the charge.")) return;
-    
+    setRefundConfirmId(null);
     setIsProcessingRefund(paymentId);
     
     // Simulate Razorpay Refund API call
@@ -46,12 +47,13 @@ export default function AdminPaymentsDirectory() {
     
     if (!error) {
       setPayments(payments.map(p => p.id === paymentId ? { ...p, status: 'refunded' } : p));
-      alert("Refund initiated successfully. Will reflect in source account in 5-7 business days.");
+      setStatusMsg({type: 'success', text: 'Refund initiated successfully. Will reflect in source account in 5-7 business days.'});
     } else {
-      alert("Refund failed. Verify Razorpay balance context.");
+      setStatusMsg({type: 'error', text: 'Refund failed. Verify Razorpay balance context.'});
     }
     
     setIsProcessingRefund(null);
+    setTimeout(() => setStatusMsg(null), 8000);
   };
 
   const filteredPayments = payments.filter(p => {
@@ -70,6 +72,27 @@ export default function AdminPaymentsDirectory() {
           <p className="text-gray-500 mt-1 text-sm">Monitor all platform transactions, SaaS subscriptions, and process manual refunds.</p>
         </div>
       </div>
+
+      {/* Inline Status Banner */}
+      {statusMsg && (
+        <div className={`rounded-xl p-4 flex items-center gap-3 ${statusMsg.type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          {statusMsg.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" /> : <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />}
+          <p className={`text-sm font-bold flex-1 ${statusMsg.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>{statusMsg.text}</p>
+          <button onClick={() => setStatusMsg(null)} className="text-gray-400 hover:text-gray-600 text-xs font-bold">✕</button>
+        </div>
+      )}
+
+      {/* Refund Confirmation Banner */}
+      {refundConfirmId && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <p className="text-sm font-medium text-amber-800 flex-1">Are you sure you want to initiate a full refund? This calls the Razorpay Refund API and reverses the charge.</p>
+          <div className="flex gap-2 shrink-0">
+            <Button onClick={() => setRefundConfirmId(null)} variant="outline" className="text-xs h-8 px-4 border-gray-200">Cancel</Button>
+            <Button onClick={() => processRefund(refundConfirmId)} className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold h-8 px-4">Yes, Refund</Button>
+          </div>
+        </div>
+      )}
 
       <Card className="rounded-xl shadow-sm border-gray-200 overflow-hidden">
         {/* Toolbar */}
@@ -171,7 +194,7 @@ export default function AdminPaymentsDirectory() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => processRefund(p.id)}
+                          onClick={() => setRefundConfirmId(p.id)}
                           disabled={isProcessingRefund === p.id}
                           className="text-orange-600 border-orange-200 hover:bg-orange-50 font-bold h-8"
                         >

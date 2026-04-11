@@ -16,6 +16,9 @@ export default function SubscriptionPage() {
   const [payments, setPayments] = useState<any[]>([]);
   const [isAnnual, setIsAnnual] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [cancelDone, setCancelDone] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const supabase = createClient();
   const router = useRouter();
@@ -83,7 +86,7 @@ export default function SubscriptionPage() {
             } else {
               const errData = await activateRes.json();
               console.error("Activation failed:", errData.error);
-              alert("Payment received but activation failed: " + errData.error + "\nPlease contact support.");
+              setErrorMsg("Payment received but activation failed: " + errData.error + ". Please contact support.");
               setIsProcessing(false);
             }
           } catch (err) {
@@ -102,23 +105,26 @@ export default function SubscriptionPage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any){
-         alert("Payment failed: " + response.error.description);
+         setErrorMsg("Payment failed: " + response.error.description);
          setIsProcessing(false);
       });
       rzp.open();
 
     } catch (error) {
       console.error(error);
-      alert("System failed to configure checkout gateway.");
+      setErrorMsg("System failed to configure checkout gateway. Please try again.");
       setIsProcessing(false);
     }
   };
 
-  const handleCancel = async () => {
-    const confirmed = window.confirm("Are you sure you want to cancel your Shield subscription? You will lose active protection at the end of your billing cycle.");
-    if (confirmed) {
-       alert("Cancel request recorded. A support agent will process this within 24 hours.");
-    }
+  const handleCancel = () => {
+    setShowCancelConfirm(true);
+  };
+
+  const confirmCancel = () => {
+    setShowCancelConfirm(false);
+    setCancelDone(true);
+    setTimeout(() => setCancelDone(false), 8000);
   };
 
   if (loading) {
@@ -140,6 +146,49 @@ export default function SubscriptionPage() {
         <h1 className="text-3xl font-bold font-syne text-white">Shield Subscription</h1>
         <p className="text-gray-400 mt-1">Manage your tenant protection plan and billing history.</p>
       </div>
+
+      {/* Inline Error Banner */}
+      {errorMsg && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-4"
+        >
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-red-300">{errorMsg}</p>
+          </div>
+          <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-red-300 text-xs font-bold shrink-0">Dismiss</button>
+        </motion.div>
+      )}
+
+      {/* Inline Cancel Confirmation Banner */}
+      {showCancelConfirm && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+          <p className="text-sm font-medium text-amber-200 flex-1">Are you sure you want to cancel your Shield subscription? You will lose active protection at the end of your billing cycle.</p>
+          <div className="flex gap-2 shrink-0">
+            <Button onClick={() => setShowCancelConfirm(false)} variant="outline" className="bg-transparent border-white/10 text-gray-300 hover:bg-white/5 text-xs h-8 px-4">Keep Plan</Button>
+            <Button onClick={confirmCancel} className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold h-8 px-4">Yes, Cancel</Button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Cancel Done Banner */}
+      {cancelDone && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 flex items-center gap-4"
+        >
+          <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0" />
+          <p className="text-sm font-bold text-green-300">Cancel request recorded. A support agent will process this within 24 hours.</p>
+        </motion.div>
+      )}
 
       {justActivated && (
         <motion.div 
@@ -327,11 +376,18 @@ export default function SubscriptionPage() {
                        </td>
                         <td className="px-6 py-4">
                           <button 
-                            onClick={() => generateReceipt({
-                              ...p,
-                              user_name: profile?.full_name,
-                              user_email: profile?.email
-                            })}
+                            onClick={() => {
+                              try {
+                                generateReceipt({
+                                  ...p,
+                                  user_name: profile?.full_name,
+                                  user_email: profile?.email
+                                });
+                              } catch (err: any) {
+                                setErrorMsg(err.message || "Failed to generate receipt");
+                                setTimeout(() => setErrorMsg(null), 5000);
+                              }
+                            }}
                             className="text-[#E8602A] text-xs font-bold hover:underline"
                           >
                             Download

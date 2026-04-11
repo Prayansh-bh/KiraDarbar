@@ -28,6 +28,8 @@ export default function AdminCaseWorkbench({ params }: { params: Promise<{ id: s
   const [notice, setNotice] = useState<any>(null);
   const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   
   const supabase = createClient();
   const router = useRouter();
@@ -108,11 +110,16 @@ export default function AdminCaseWorkbench({ params }: { params: Promise<{ id: s
     }
 
     setIsSaving(false);
-    alert("Workspace saved.");
+    setSaveMessage("Workspace saved.");
+    setTimeout(() => setSaveMessage(""), 3000);
+  };
+
+  const handleApproveClick = () => {
+    setShowApproveConfirm(true);
   };
 
   const approveAndSend = async () => {
-    if (!confirm("This will lock the notice and dispatch it via email/post. Proceed?")) return;
+    setShowApproveConfirm(false);
     setIsSaving(true);
     
     await saveWorkspace();
@@ -151,11 +158,31 @@ export default function AdminCaseWorkbench({ params }: { params: Promise<{ id: s
            <Button variant="outline" onClick={saveWorkspace} disabled={isSaving} className="bg-white font-bold h-10 border-gray-200 shadow-sm">
              <Save className="w-4 h-4 mr-2" /> Save Draft
            </Button>
-           <Button onClick={approveAndSend} disabled={isSaving || notice?.status === 'sent'} className="bg-[#E8602A] hover:bg-[#D4501D] text-white font-bold h-10 shadow-sm">
+           <Button onClick={handleApproveClick} disabled={isSaving || notice?.status === 'sent'} className="bg-[#E8602A] hover:bg-[#D4501D] text-white font-bold h-10 shadow-sm">
              <Send className="w-4 h-4 mr-2" /> {notice?.status === 'sent' ? 'Already Sent' : 'Approve & Dispatch'}
            </Button>
         </div>
       </div>
+
+      {saveMessage && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative mb-4 flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <span className="block sm:inline font-medium text-sm">{saveMessage}</span>
+        </div>
+      )}
+
+      {showApproveConfirm && (
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex-1">
+            <p className="text-sm font-bold text-amber-900">Are you sure you want to approve and dispatch?</p>
+            <p className="text-xs text-amber-700 mt-1">This will lock the notice and dispatch it via email/post. Proceed?</p>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowApproveConfirm(false)} variant="outline" className="bg-white border-amber-200 text-amber-800 hover:bg-amber-100 text-xs h-8 px-4">Cancel</Button>
+            <Button onClick={approveAndSend} className="bg-[#E8602A] hover:bg-[#D4501D] text-white text-xs font-bold h-8 px-4">Yes, Dispatch</Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         

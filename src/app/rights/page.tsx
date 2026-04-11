@@ -284,7 +284,6 @@ export default function RightsCheckerPage() {
       } catch {}
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
     }
   };
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, ArrowLeft, Gavel, FileText, BadgeIndianRupee, HelpCircle, 
-  UploadCloud, CheckCircle2, CreditCard, Lock
+  UploadCloud, CheckCircle2, CreditCard, Lock, AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -130,6 +130,7 @@ export default function NewCasePage() {
   });
   const [files, setFiles] = useState<File[]>([]);
   const [createdCaseId, setCreatedCaseId] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const supabase = createClient();
   const router = useRouter();
@@ -171,7 +172,7 @@ export default function NewCasePage() {
 
     if (caseError) {
       console.error(caseError);
-      alert("Error generating case. Please try again.");
+      setErrorMsg("Error generating case. Please try again.");
       setLoading(false);
       return;
     }
@@ -235,7 +236,7 @@ export default function NewCasePage() {
            if (verifyRes.ok) {
               router.push(`/success?case_id=${caseData.id}`);
            } else {
-              alert("Payment verification failed. Please contact support.");
+               setErrorMsg("Payment verification failed. Please contact support.");
               setLoading(false);
            }
         },
@@ -250,14 +251,14 @@ export default function NewCasePage() {
 
       const rzp = new (window as any).Razorpay(options);
       rzp.on('payment.failed', function (response: any){
-         alert("Payment failed: " + response.error.description);
+         setErrorMsg("Payment failed: " + response.error.description);
          setLoading(false);
       });
       
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert("Checkout initialization failed.");
+      setErrorMsg("Checkout initialization failed. Please try again.");
       setLoading(false);
     }
   };
@@ -265,6 +266,16 @@ export default function NewCasePage() {
   return (
     <div className="max-w-4xl mx-auto pb-24">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
+      {/* Inline Error Banner */}
+      {errorMsg && (
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3 mb-6">
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <p className="text-sm font-bold text-red-300 flex-1">{errorMsg}</p>
+          <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-red-300 text-xs font-bold">✕</button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-12">
         <h1 className="text-4xl font-black font-syne italic text-white tracking-tighter">

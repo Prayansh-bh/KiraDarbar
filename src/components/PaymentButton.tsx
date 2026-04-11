@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, IndianRupee } from "lucide-react";
+import { Loader2, IndianRupee, AlertCircle, CheckCircle2 } from "lucide-react";
 
 interface PaymentButtonProps {
   amount: number;
@@ -13,6 +13,7 @@ interface PaymentButtonProps {
 
 export default function PaymentButton({ amount, caseId, productType, buttonText }: PaymentButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -31,7 +32,7 @@ export default function PaymentButton({ amount, caseId, productType, buttonText 
       const res = await loadRazorpay();
 
       if (!res) {
-        alert("Razorpay SDK failed to load. Are you online?");
+        setStatusMsg({type: 'error', text: 'Razorpay SDK failed to load. Are you online?'});
         return;
       }
 
@@ -60,7 +61,7 @@ export default function PaymentButton({ amount, caseId, productType, buttonText 
         handler: async function (response: any) {
           // You could also verify on the client and redirect, 
           // but we rely on the backend webhook for the source of truth.
-          alert("Payment Successful! Your case is now in review.");
+          setStatusMsg({type: 'success', text: 'Payment Successful! Your case is now in review.'});
           window.location.reload();
         },
         prefill: {
@@ -78,24 +79,32 @@ export default function PaymentButton({ amount, caseId, productType, buttonText 
 
     } catch (error: any) {
       console.error("Payment error:", error);
-      alert(error.message || "Something went wrong during payment initialization.");
+      setStatusMsg({type: 'error', text: error.message || 'Something went wrong during payment initialization.'});
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Button 
-      onClick={handlePayment} 
-      disabled={loading}
-      className="w-full bg-primary text-secondary font-black italic tracking-tighter uppercase h-10 text-xs gap-2"
-    >
-      {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
-      ) : (
-        <IndianRupee className="w-4 h-4" />
+    <div className="space-y-2">
+      <Button 
+        onClick={handlePayment} 
+        disabled={loading}
+        className="w-full bg-primary text-secondary font-black italic tracking-tighter uppercase h-10 text-xs gap-2"
+      >
+        {loading ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <IndianRupee className="w-4 h-4" />
+        )}
+        {buttonText}
+      </Button>
+      {statusMsg && (
+        <div className={`flex items-center gap-2 p-2 rounded-lg text-xs font-bold ${statusMsg.type === 'success' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+          {statusMsg.type === 'success' ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+          {statusMsg.text}
+        </div>
       )}
-      {buttonText}
-    </Button>
+    </div>
   );
 }

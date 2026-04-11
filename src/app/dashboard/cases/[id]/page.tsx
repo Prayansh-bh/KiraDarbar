@@ -49,7 +49,6 @@ export default function CaseDetailPage({ params }: { params: Promise<{ id: strin
       ]);
 
       if (!tCase) {
-        alert("Case not found or access denied.");
         router.push("/dashboard/cases");
         return;
       }
