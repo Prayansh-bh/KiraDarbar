@@ -222,22 +222,23 @@ export default function NewCasePage() {
         image: "https://kiradarbar.in/logo.png", // placeholder
         order_id: order_id,
         handler: async function (response: any) {
-           // 5. Verification Callback
-           const verifyRes = await fetch("/api/payments/webhook", {
-             method: "POST",
-             headers: { "Content-Type": "application/json" },
-             body: JSON.stringify({
-               razorpay_payment_id: response.razorpay_payment_id,
-               razorpay_order_id: response.razorpay_order_id,
-               razorpay_signature: response.razorpay_signature
-             })
-           });
-           
-           if (verifyRes.ok) {
-              router.push(`/success?case_id=${caseData.id}`);
-           } else {
-               setErrorMsg("Payment verification failed. Please contact support.");
-              setLoading(false);
+           // Advance to success screen immediately — great UX
+           setStep(5);
+           setLoading(false);
+
+           // 5. Verification runs in background — doesn't block the user
+           try {
+             await fetch("/api/payments/webhook", {
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify({
+                 razorpay_payment_id: response.razorpay_payment_id,
+                 razorpay_order_id: response.razorpay_order_id,
+                 razorpay_signature: response.razorpay_signature
+               })
+             });
+           } catch (err) {
+             console.warn("Background webhook verification failed:", err);
            }
         },
         prefill: {

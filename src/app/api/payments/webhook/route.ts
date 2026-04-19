@@ -12,7 +12,8 @@ const CallbackSchema = z.object({
   razorpay_signature: z.string(),
 });
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazily initialize Resend so a missing key doesn't crash the module at load time
+const getResend = () => process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const dynamic = "force-dynamic";
 
@@ -105,13 +106,18 @@ export async function POST(request: Request) {
       }
 
       try {
-        await resend.emails.send({
-           from: 'KiraDarbar <onboarding@resend.dev>',
-           replyTo: 'hello@kiradarbar.in',
-           to: paymentRecord.users?.email || 'tenant@kiradarbar.in',
-           subject: "You're now protected — Shield activated ✓",
-           react: ShieldWelcomeEmail({ name: paymentRecord.users?.full_name || 'Tenant', expiration: expiration.toISOString() }) as any
-        });
+        const resend = getResend();
+        if (resend) {
+          await resend.emails.send({
+             from: 'KiraDarbar <onboarding@resend.dev>',
+             replyTo: 'hello@kiradarbar.in',
+             to: paymentRecord.users?.email || 'tenant@kiradarbar.in',
+             subject: "You're now protected — Shield activated ✓",
+             react: ShieldWelcomeEmail({ name: paymentRecord.users?.full_name || 'Tenant', expiration: expiration.toISOString() }) as any
+          });
+        } else {
+          console.warn("RESEND_API_KEY not set — skipping Shield welcome email.");
+        }
       } catch (emailErr) {
         console.warn("Email sending failed:", emailErr);
       }
@@ -131,13 +137,18 @@ export async function POST(request: Request) {
 
       const caseIdPrefix = finalCaseId ? finalCaseId.split('-')[0].toUpperCase() : 'UNKNOWN';
       try {
-        await resend.emails.send({
-           from: 'KiraDarbar Support <onboarding@resend.dev>',
-           replyTo: 'hello@kiradarbar.in',
-           to: paymentRecord.users?.email || 'tenant@kiradarbar.in',
-           subject: `Your case has been filed — KD-${caseIdPrefix}`,
-           react: CaseFiledEmail({ caseId: finalCaseId || '', pType: product }) as any
-        });
+        const resend = getResend();
+        if (resend) {
+          await resend.emails.send({
+             from: 'KiraDarbar Support <onboarding@resend.dev>',
+             replyTo: 'hello@kiradarbar.in',
+             to: paymentRecord.users?.email || 'tenant@kiradarbar.in',
+             subject: `Your case has been filed — KD-${caseIdPrefix}`,
+             react: CaseFiledEmail({ caseId: finalCaseId || '', pType: product }) as any
+          });
+        } else {
+          console.warn("RESEND_API_KEY not set — skipping case filed email.");
+        }
       } catch (emailErr) {
         console.warn("Case email sending failed:", emailErr);
       }
