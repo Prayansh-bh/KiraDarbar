@@ -7,12 +7,14 @@ import { z } from "zod";
 const productPrices: Record<string, number> = {
   legal_notice: 79900,
   agreement_review: 49900,
+  deposit_recovery: 79900,
+  rights_check: 29900,
   shield_monthly: 19900,
   shield_annual: 149900,
 };
 
 const OrderSchema = z.object({
-  product: z.enum(["legal_notice", "agreement_review", "shield_monthly", "shield_annual"]),
+  product: z.enum(["legal_notice", "agreement_review", "deposit_recovery", "rights_check", "shield_monthly", "shield_annual"]),
   case_id: z.string().uuid().optional(),
 });
 
